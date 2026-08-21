@@ -17,7 +17,7 @@ const plexMono = IBM_Plex_Mono({
 
 const SITE_NAME = "Harbor Stack";
 const DESCRIPTION =
-  "Play Harbor Stack — a fast, mobile-friendly Tetris game by Strand & Stone. Keyboard and touch controls, scoring, levels, next piece, and pause. No account required.";
+  "Play Harbor Stack — mobile-friendly Tetris by Strand & Stone with touch controls, levels, pause, and a live high-score leaderboard. No account required.";
 
 export const metadata: Metadata = {
   metadataBase: getSiteUrl(),
