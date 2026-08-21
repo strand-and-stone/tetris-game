@@ -21,6 +21,7 @@ import {
   tick,
   togglePause,
 } from "@/lib/tetris";
+import type { HighScore } from "@/lib/score-types";
 import styles from "./TetrisGame.module.css";
 
 type Action =
@@ -32,6 +33,12 @@ type Action =
   | "rotateCCW"
   | "pause"
   | "start";
+
+type LeaderboardState = {
+  scores: HighScore[];
+  loading: boolean;
+  error: string | null;
+};
 
 function formatScore(n: number): string {
   return n.toLocaleString("en-US");
@@ -53,14 +60,72 @@ function ghostCellValue(state: GameState, x: number, y: number): Cell {
 
 export default function TetrisGame() {
   const [state, setState] = useState<GameState>(() => createGame());
+  const [leaderboard, setLeaderboard] = useState<LeaderboardState>({
+    scores: [],
+    loading: true,
+    error: null,
+  });
+  const [playerName, setPlayerName] = useState("");
+  const [submitState, setSubmitState] = useState<"idle" | "saving" | "saved" | "error">(
+    "idle",
+  );
+  const [submitError, setSubmitError] = useState<string | null>(null);
+
   const stateRef = useRef(state);
   const dropAcc = useRef(0);
   const lastTs = useRef<number | null>(null);
   const repeatRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const swipeStart = useRef<{ x: number; y: number; t: number } | null>(null);
+  const boardRef = useRef<HTMLElement | null>(null);
 
   useEffect(() => {
     stateRef.current = state;
   }, [state]);
+
+  const refreshScores = useCallback(async () => {
+    setLeaderboard((prev) => ({ ...prev, loading: true, error: null }));
+    try {
+      const res = await fetch("/api/scores", { cache: "no-store" });
+      const data = (await res.json()) as { scores?: HighScore[]; error?: string };
+      setLeaderboard({
+        scores: data.scores ?? [],
+        loading: false,
+        error: res.ok ? null : data.error ?? "Leaderboard unavailable",
+      });
+    } catch {
+      setLeaderboard({
+        scores: [],
+        loading: false,
+        error: "Leaderboard unavailable",
+      });
+    }
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch("/api/scores", { cache: "no-store" });
+        const data = (await res.json()) as { scores?: HighScore[]; error?: string };
+        if (cancelled) return;
+        setLeaderboard({
+          scores: data.scores ?? [],
+          loading: false,
+          error: res.ok ? null : data.error ?? "Leaderboard unavailable",
+        });
+      } catch {
+        if (cancelled) return;
+        setLeaderboard({
+          scores: [],
+          loading: false,
+          error: "Leaderboard unavailable",
+        });
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const apply = useCallback((fn: (s: GameState) => GameState) => {
     setState((prev) => {
@@ -74,6 +139,8 @@ export default function TetrisGame() {
     (action: Action) => {
       switch (action) {
         case "start":
+          setSubmitState("idle");
+          setSubmitError(null);
           apply(startGame);
           break;
         case "pause":
@@ -130,6 +197,11 @@ export default function TetrisGame() {
 
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
+      const target = e.target as HTMLElement | null;
+      if (target && (target.tagName === "INPUT" || target.tagName === "TEXTAREA")) {
+        return;
+      }
+
       const key = e.key.toLowerCase();
       const map: Record<string, Action> = {
         arrowleft: "left",
@@ -191,21 +263,90 @@ export default function TetrisGame() {
     runAction(action);
     clearRepeat();
     if (action === "left" || action === "right" || action === "soft") {
-      repeatRef.current = setInterval(() => runAction(action), 70);
+      repeatRef.current = setInterval(() => runAction(action), 65);
     }
   };
 
   useEffect(() => () => clearRepeat(), []);
 
+  const onSwipeStart = (e: React.PointerEvent) => {
+    if (e.pointerType === "mouse") return;
+    swipeStart.current = { x: e.clientX, y: e.clientY, t: Date.now() };
+  };
+
+  const onSwipeEnd = (e: React.PointerEvent) => {
+    if (e.pointerType === "mouse" || !swipeStart.current) return;
+    if (stateRef.current.status !== "playing") {
+      swipeStart.current = null;
+      return;
+    }
+
+    const dx = e.clientX - swipeStart.current.x;
+    const dy = e.clientY - swipeStart.current.y;
+    const dt = Date.now() - swipeStart.current.t;
+    swipeStart.current = null;
+
+    const absX = Math.abs(dx);
+    const absY = Math.abs(dy);
+    if (absX < 24 && absY < 24 && dt < 250) {
+      runAction("rotate");
+      return;
+    }
+    if (absX > absY && absX > 28) {
+      runAction(dx > 0 ? "right" : "left");
+      return;
+    }
+    if (absY > absX && absY > 36) {
+      runAction(dy > 0 ? "hard" : "rotate");
+    }
+  };
+
+  async function submitScore(event: React.FormEvent) {
+    event.preventDefault();
+    if (submitState === "saving" || submitState === "saved") return;
+    setSubmitState("saving");
+    setSubmitError(null);
+    try {
+      const res = await fetch("/api/scores", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: playerName,
+          score: state.score,
+          lines: state.lines,
+          level: state.level,
+        }),
+      });
+      const data = (await res.json()) as {
+        scores?: HighScore[];
+        error?: string;
+      };
+      if (!res.ok) {
+        setSubmitState("error");
+        setSubmitError(data.error ?? "Could not save score");
+        return;
+      }
+      setLeaderboard({
+        scores: data.scores ?? [],
+        loading: false,
+        error: null,
+      });
+      setSubmitState("saved");
+    } catch {
+      setSubmitState("error");
+      setSubmitError("Could not save score");
+    }
+  }
+
   const cells = renderCells(state);
   const nextShape = getShape(state.next);
   const overlay =
     state.status === "ready"
-      ? { title: "Ready", hint: "Press Play or Enter" }
+      ? { title: "Stack the tide", hint: "Play instantly — no account" }
       : state.status === "paused"
-        ? { title: "Paused", hint: "Press P or Resume" }
+        ? { title: "Paused", hint: "Resume when ready" }
         : state.status === "over"
-          ? { title: "Game Over", hint: "Press Play to stack again" }
+          ? { title: "Game Over", hint: `${formatScore(state.score)} pts · L${state.level}` }
           : null;
 
   return (
@@ -213,13 +354,11 @@ export default function TetrisGame() {
       <header className={styles.hero}>
         <p className={styles.brand}>Strand &amp; Stone</p>
         <h1 className={styles.title}>Harbor Stack</h1>
-        <p className={styles.lede}>
-          Classic Tetris for the browser — clear lines, climb levels, keep the tide rising.
-        </p>
+        <p className={styles.lede}>Clear lines. Climb levels. Claim the board.</p>
       </header>
 
-      <div className={styles.stage}>
-        <aside className={styles.hud} aria-label="Score panel">
+      <div className={styles.chrome}>
+        <div className={styles.statRow} aria-label="Score panel">
           <Stat label="Score" value={formatScore(state.score)} />
           <Stat label="Level" value={String(state.level)} />
           <Stat label="Lines" value={String(state.lines)} />
@@ -229,9 +368,7 @@ export default function TetrisGame() {
               className={styles.nextGrid}
               role="img"
               aria-label={`Next piece: ${PIECE_NAMES[state.next]}`}
-              style={{
-                gridTemplateColumns: `repeat(${nextShape[0].length}, 1fr)`,
-              }}
+              style={{ gridTemplateColumns: `repeat(${nextShape[0].length}, 1fr)` }}
             >
               {nextShape.flatMap((row, y) =>
                 row.map((cell, x) => (
@@ -248,9 +385,18 @@ export default function TetrisGame() {
               )}
             </div>
           </div>
-        </aside>
+        </div>
 
-        <section className={styles.boardWrap} aria-label="Tetris playfield">
+        <section
+          ref={boardRef}
+          className={styles.boardWrap}
+          aria-label="Tetris playfield"
+          onPointerDown={onSwipeStart}
+          onPointerUp={onSwipeEnd}
+          onPointerCancel={() => {
+            swipeStart.current = null;
+          }}
+        >
           <div
             className={styles.board}
             role="grid"
@@ -276,9 +422,7 @@ export default function TetrisGame() {
                     }`}
                     style={
                       ghost && ghostValue
-                        ? {
-                            boxShadow: `inset 0 0 0 2px ${PIECE_COLORS[ghostValue]}`,
-                          }
+                        ? { boxShadow: `inset 0 0 0 2px ${PIECE_COLORS[ghostValue]}` }
                         : color
                           ? { background: color }
                           : undefined
@@ -294,47 +438,59 @@ export default function TetrisGame() {
             <div className={styles.overlay} role="status">
               <p className={styles.overlayTitle}>{overlay.title}</p>
               <p className={styles.overlayHint}>{overlay.hint}</p>
+
+              {state.status === "over" && (
+                <form className={styles.scoreForm} onSubmit={submitScore}>
+                  <label className={styles.scoreLabel} htmlFor="player-name">
+                    Initials for the harbor board
+                  </label>
+                  <div className={styles.scoreRow}>
+                    <input
+                      id="player-name"
+                      className={styles.scoreInput}
+                      name="player-name"
+                      autoComplete="off"
+                      spellCheck={false}
+                      maxLength={12}
+                      placeholder="AAA"
+                      value={playerName}
+                      onChange={(e) => setPlayerName(e.target.value.slice(0, 12))}
+                      disabled={submitState === "saving" || submitState === "saved"}
+                    />
+                    <button
+                      type="submit"
+                      className={styles.primaryBtn}
+                      disabled={
+                        submitState === "saving" ||
+                        submitState === "saved" ||
+                        playerName.trim().length < 1
+                      }
+                    >
+                      {submitState === "saved"
+                        ? "Saved"
+                        : submitState === "saving"
+                          ? "Saving…"
+                          : "Submit"}
+                    </button>
+                  </div>
+                  {submitError && <p className={styles.formError}>{submitError}</p>}
+                </form>
+              )}
+
               <button
                 type="button"
                 className={styles.primaryBtn}
                 onClick={() => runAction(state.status === "paused" ? "pause" : "start")}
               >
-                {state.status === "paused" ? "Resume" : "Play"}
+                {state.status === "paused"
+                  ? "Resume"
+                  : state.status === "over"
+                    ? "Play again"
+                    : "Play"}
               </button>
             </div>
           )}
         </section>
-
-        <aside className={styles.help} aria-label="Controls">
-          <h2 className={styles.helpTitle}>Controls</h2>
-          <ul className={styles.helpList}>
-            <li>
-              <kbd>←</kbd>
-              <kbd>→</kbd> move
-            </li>
-            <li>
-              <kbd>↑</kbd> / <kbd>X</kbd> rotate
-            </li>
-            <li>
-              <kbd>↓</kbd> soft drop
-            </li>
-            <li>
-              <kbd>Space</kbd> hard drop
-            </li>
-            <li>
-              <kbd>P</kbd> pause
-            </li>
-          </ul>
-          {state.status === "playing" && (
-            <button
-              type="button"
-              className={styles.secondaryBtn}
-              onClick={() => runAction("pause")}
-            >
-              Pause
-            </button>
-          )}
-        </aside>
       </div>
 
       <div className={styles.touch} aria-label="Touch controls">
@@ -355,7 +511,7 @@ export default function TetrisGame() {
         <button
           type="button"
           className={styles.touchBtn}
-          aria-label="Rotate clockwise"
+          aria-label="Rotate"
           onPointerDown={(e) => {
             e.preventDefault();
             runAction("rotate");
@@ -393,7 +549,7 @@ export default function TetrisGame() {
         </button>
         <button
           type="button"
-          className={`${styles.touchBtn} ${styles.touchWide}`}
+          className={`${styles.touchBtn} ${styles.touchAccent}`}
           aria-label="Hard drop"
           onPointerDown={(e) => {
             e.preventDefault();
@@ -404,7 +560,7 @@ export default function TetrisGame() {
         </button>
         <button
           type="button"
-          className={`${styles.touchBtn} ${styles.touchWide}`}
+          className={styles.touchBtn}
           aria-label={state.status === "playing" ? "Pause" : "Play"}
           onPointerDown={(e) => {
             e.preventDefault();
@@ -418,6 +574,61 @@ export default function TetrisGame() {
           {state.status === "playing" ? "Pause" : "Play"}
         </button>
       </div>
+
+      <p className={styles.swipeHint}>Swipe the board · tap to rotate · buttons below</p>
+
+      <aside className={styles.leaderboard} aria-labelledby="leaderboard-heading">
+        <div className={styles.leaderHead}>
+          <h2 id="leaderboard-heading" className={styles.leaderTitle}>
+            Harbor board
+          </h2>
+          <button
+            type="button"
+            className={styles.refreshBtn}
+            onClick={() => void refreshScores()}
+            disabled={leaderboard.loading}
+          >
+            Refresh
+          </button>
+        </div>
+        {leaderboard.loading && <p className={styles.leaderMeta}>Loading scores…</p>}
+        {leaderboard.error && !leaderboard.loading && (
+          <p className={styles.leaderMeta}>{leaderboard.error}</p>
+        )}
+        {!leaderboard.loading && !leaderboard.error && leaderboard.scores.length === 0 && (
+          <p className={styles.leaderMeta}>No scores yet — be the first stack.</p>
+        )}
+        {leaderboard.scores.length > 0 && (
+          <ol className={styles.leaderList}>
+            {leaderboard.scores.map((entry, index) => (
+              <li key={entry.id} className={styles.leaderItem}>
+                <span className={styles.leaderRank}>{index + 1}</span>
+                <span className={styles.leaderName}>{entry.name}</span>
+                <span className={styles.leaderScore}>{formatScore(entry.score)}</span>
+                <span className={styles.leaderDetail}>
+                  L{entry.level} · {entry.lines} lines
+                </span>
+              </li>
+            ))}
+          </ol>
+        )}
+      </aside>
+
+      <aside className={styles.help} aria-label="Keyboard controls">
+        <h2 className={styles.helpTitle}>Desktop</h2>
+        <ul className={styles.helpList}>
+          <li>
+            <kbd>←</kbd>
+            <kbd>→</kbd> move
+          </li>
+          <li>
+            <kbd>↑</kbd> rotate · <kbd>↓</kbd> soft drop
+          </li>
+          <li>
+            <kbd>Space</kbd> hard drop · <kbd>P</kbd> pause
+          </li>
+        </ul>
+      </aside>
     </div>
   );
 }
