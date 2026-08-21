@@ -1,0 +1,372 @@
+.shell {
+  width: min(100%, 56rem);
+  margin: 0 auto;
+  padding: 1.25rem 1rem 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  animation: rise-in 0.7s var(--ease-out) both;
+}
+
+.hero {
+  text-align: center;
+  display: grid;
+  gap: 0.45rem;
+  position: relative;
+}
+
+.brand {
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: clamp(1.75rem, 6vw, 2.6rem);
+  letter-spacing: -0.03em;
+  color: var(--ink);
+  line-height: 1.05;
+  animation: brand-pulse 5s ease-in-out infinite;
+}
+
+.title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: clamp(1.05rem, 3.2vw, 1.35rem);
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--strand);
+}
+
+.lede {
+  margin: 0.15rem auto 0;
+  max-width: 28rem;
+  color: var(--stone);
+  font-size: 0.98rem;
+  line-height: 1.45;
+}
+
+.stage {
+  display: grid;
+  gap: 0.9rem;
+  align-items: start;
+  justify-items: center;
+}
+
+.hud,
+.help {
+  width: min(100%, 20rem);
+  display: grid;
+  gap: 0.65rem;
+}
+
+.stat,
+.next {
+  display: grid;
+  gap: 0.2rem;
+  padding: 0.55rem 0.7rem;
+  background: color-mix(in srgb, var(--foam) 72%, white);
+  border: 1px solid color-mix(in srgb, var(--stone) 22%, transparent);
+}
+
+.statLabel,
+.helpTitle {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--stone);
+}
+
+.statValue {
+  font-family: var(--font-mono);
+  font-size: 1.35rem;
+  font-weight: 600;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+
+.nextGrid {
+  display: grid;
+  gap: 3px;
+  width: 5.5rem;
+  aspect-ratio: 1;
+  margin-top: 0.25rem;
+}
+
+.nextCell {
+  background: color-mix(in srgb, var(--mist) 55%, transparent);
+  border-radius: 2px;
+}
+
+.boardWrap {
+  position: relative;
+  width: min(100%, 20.5rem);
+  aspect-ratio: 10 / 20;
+  background:
+    linear-gradient(180deg, rgba(12, 28, 36, 0.2), transparent 35%),
+    var(--well);
+  border: 2px solid color-mix(in srgb, var(--strand) 45%, var(--ink));
+  box-shadow:
+    0 18px 40px rgba(15, 28, 36, 0.28),
+    inset 0 0 0 1px rgba(232, 240, 242, 0.08);
+  overflow: hidden;
+  animation: board-glow 4.5s ease-in-out infinite;
+}
+
+.board {
+  display: grid;
+  width: 100%;
+  height: 100%;
+  gap: 1px;
+  padding: 2px;
+  background: rgba(8, 16, 22, 0.55);
+}
+
+.cell {
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 1px;
+  min-width: 0;
+  min-height: 0;
+}
+
+.filled {
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.28),
+    inset 0 -2px 0 rgba(0, 0, 0, 0.22);
+}
+
+.ghost {
+  background: transparent !important;
+  opacity: 0.9;
+}
+
+.overlay {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-content: center;
+  gap: 0.4rem;
+  text-align: center;
+  padding: 1rem;
+  background: color-mix(in srgb, var(--well) 78%, transparent);
+  backdrop-filter: blur(2px);
+  animation: fade-up 0.35s var(--ease-out);
+}
+
+.overlayTitle {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 1.8rem;
+  color: var(--foam);
+  letter-spacing: -0.02em;
+}
+
+.overlayHint {
+  margin: 0 0 0.5rem;
+  color: color-mix(in srgb, var(--foam) 75%, var(--strand));
+  font-size: 0.92rem;
+}
+
+.primaryBtn,
+.secondaryBtn,
+.touchBtn {
+  font: inherit;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition:
+    transform 0.15s var(--ease-out),
+    background 0.15s ease,
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.primaryBtn,
+.secondaryBtn {
+  justify-self: center;
+  padding: 0.65rem 1.25rem;
+  font-family: var(--font-display);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+.primaryBtn {
+  background: var(--strand);
+  color: var(--foam);
+  border-color: color-mix(in srgb, var(--strand) 70%, black);
+}
+
+.primaryBtn:hover {
+  transform: translateY(-1px);
+  background: color-mix(in srgb, var(--strand) 88%, white);
+}
+
+.primaryBtn:focus-visible,
+.secondaryBtn:focus-visible,
+.touchBtn:focus-visible {
+  outline: 3px solid var(--copper);
+  outline-offset: 2px;
+}
+
+.secondaryBtn {
+  background: transparent;
+  color: var(--ink);
+  border-color: color-mix(in srgb, var(--stone) 40%, transparent);
+}
+
+.secondaryBtn:hover {
+  border-color: var(--strand);
+  color: var(--strand);
+}
+
+.help {
+  display: none;
+}
+
+.helpTitle {
+  margin: 0;
+}
+
+.helpList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.4rem;
+  color: var(--stone);
+  font-size: 0.9rem;
+}
+
+.helpList kbd {
+  display: inline-block;
+  min-width: 1.4rem;
+  padding: 0.1rem 0.35rem;
+  margin-right: 0.15rem;
+  border: 1px solid color-mix(in srgb, var(--stone) 35%, transparent);
+  background: color-mix(in srgb, var(--foam) 80%, white);
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: var(--ink);
+  text-align: center;
+}
+
+.touch {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.55rem;
+  width: min(100%, 22rem);
+  margin: 0 auto;
+  touch-action: manipulation;
+  user-select: none;
+}
+
+.touchBtn {
+  min-height: 3.1rem;
+  background: color-mix(in srgb, var(--foam) 70%, white);
+  border-color: color-mix(in srgb, var(--stone) 28%, transparent);
+  color: var(--ink);
+  font-family: var(--font-display);
+  font-size: 1.2rem;
+  font-weight: 700;
+}
+
+.touchBtn:active {
+  transform: scale(0.97);
+  background: color-mix(in srgb, var(--strand) 18%, var(--foam));
+}
+
+.touchWide {
+  grid-column: span 2;
+  font-size: 0.95rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+@keyframes rise-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes brand-pulse {
+  0%,
+  100% {
+    letter-spacing: -0.03em;
+  }
+  50% {
+    letter-spacing: -0.01em;
+  }
+}
+
+@keyframes board-glow {
+  0%,
+  100% {
+    box-shadow:
+      0 18px 40px rgba(15, 28, 36, 0.28),
+      inset 0 0 0 1px rgba(232, 240, 242, 0.08);
+  }
+  50% {
+    box-shadow:
+      0 20px 46px rgba(26, 138, 122, 0.22),
+      inset 0 0 0 1px rgba(62, 207, 200, 0.16);
+  }
+}
+
+@media (min-width: 760px) {
+  .shell {
+    padding-top: 1.75rem;
+  }
+
+  .stage {
+    grid-template-columns: 9.5rem minmax(18rem, 21rem) 9.5rem;
+    justify-content: center;
+    align-items: stretch;
+  }
+
+  .hud,
+  .help {
+    width: 100%;
+    align-content: start;
+  }
+
+  .help {
+    display: grid;
+  }
+
+  .touch {
+    display: none;
+  }
+
+  .boardWrap {
+    width: 21rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .shell,
+  .overlay,
+  .brand,
+  .boardWrap {
+    animation: none;
+  }
+
+  .primaryBtn,
+  .secondaryBtn,
+  .touchBtn {
+    transition: none;
+  }
+}

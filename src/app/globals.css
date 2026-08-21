@@ -1,0 +1,70 @@
+:root {
+  --ink: #0f1c24;
+  --stone: #4d5f6a;
+  --strand: #1a8a7a;
+  --copper: #c4783a;
+  --foam: #e8f0f2;
+  --mist: #b7c5ce;
+  --well: #102029;
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  color-scheme: light;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  min-height: 100%;
+  font-family: var(--font-mono), ui-monospace, monospace;
+  color: var(--ink);
+  background: #aebec8;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+a {
+  color: inherit;
+}
+
+img {
+  max-width: 100%;
+  height: auto;
+}
+
+.skip-link {
+  position: absolute;
+  left: 0.75rem;
+  top: 0.75rem;
+  z-index: 100;
+  transform: translateY(-160%);
+  padding: 0.55rem 0.85rem;
+  background: var(--ink);
+  color: var(--foam);
+  font-family: var(--font-display);
+  font-weight: 700;
+  text-decoration: none;
+  border-radius: 2px;
+}
+
+.skip-link:focus {
+  transform: translateY(0);
+  outline: 3px solid var(--copper);
+  outline-offset: 2px;
+}
+
+:focus-visible {
+  outline: 3px solid var(--copper);
+  outline-offset: 2px;
+}
+
+button {
+  -webkit-tap-highlight-color: transparent;
+}
