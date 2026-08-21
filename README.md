@@ -2,6 +2,8 @@
 
 Playable Tetris in the browser by **Strand & Stone**.
 
+**Live:** https://tetris-game-gamma-one.vercel.app
+
 ## Features
 
 - Classic 10×20 Tetris with 7-bag randomizer
