@@ -1,6 +1,6 @@
 import { ImageResponse } from "next/og";
 
-export const alt = "Harbor Stack — playable Tetris by Strand & Stone";
+export const alt = "Edge Stack — 18+ late-night Tetris by Strand & Stone";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
@@ -15,30 +15,33 @@ export default function OpenGraphImage() {
           flexDirection: "column",
           justifyContent: "space-between",
           padding: "64px",
-          background:
-            "linear-gradient(145deg, #c9d6de 0%, #8fa4b0 55%, #1a8a7a 140%)",
-          color: "#0f1c24",
+          background: "linear-gradient(145deg, #14070c 0%, #0a0608 50%, #ff4d6d 160%)",
+          color: "#ffe6ef",
           fontFamily: "sans-serif",
         }}
       >
-        <div style={{ display: "flex", fontSize: 42, fontWeight: 800 }}>
-          Strand & Stone
+        <div style={{ display: "flex", fontSize: 36, fontWeight: 800, color: "#b8ff3c" }}>
+          Strand & Stone · 18+
         </div>
-        <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-          <div style={{ display: "flex", fontSize: 88, fontWeight: 800, letterSpacing: -2 }}>
-            Harbor Stack
+        <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+          <div
+            style={{
+              display: "flex",
+              fontSize: 96,
+              fontWeight: 800,
+              letterSpacing: 2,
+              textTransform: "uppercase",
+              color: "#ff4d6d",
+            }}
+          >
+            Edge Stack
           </div>
-          <div style={{ display: "flex", fontSize: 32, color: "#102029", maxWidth: 760 }}>
-            Classic Tetris in the browser — score, levels, next piece, pause. Keyboard and touch.
+          <div style={{ display: "flex", fontSize: 30, color: "#c9a0ad", maxWidth: 780 }}>
+            {`Clear lines. Don't bust. Late-night Tetris for gooners who can hold it.`}
           </div>
         </div>
-        <div
-          style={{
-            display: "flex",
-            gap: 10,
-          }}
-        >
-          {["#3ecfc8", "#e8b84a", "#6b8cae", "#5ecf8a", "#d96b5c", "#4a7fd4", "#d4894a"].map(
+        <div style={{ display: "flex", gap: 10 }}>
+          {["#5ce1e6", "#ffc857", "#ff4d6d", "#b8ff3c", "#ff3b5c", "#ff7a59", "#ff9f68"].map(
             (color) => (
               <div
                 key={color}

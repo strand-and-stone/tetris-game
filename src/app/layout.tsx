@@ -1,12 +1,12 @@
 import type { Metadata, Viewport } from "next";
-import { IBM_Plex_Mono, Syne } from "next/font/google";
+import { IBM_Plex_Mono, Teko } from "next/font/google";
 import { getSiteUrl } from "@/lib/site";
 import "./globals.css";
 
-const syne = Syne({
+const teko = Teko({
   variable: "--font-display",
   subsets: ["latin"],
-  weight: ["600", "700", "800"],
+  weight: ["500", "600", "700"],
 });
 
 const plexMono = IBM_Plex_Mono({
@@ -15,25 +15,26 @@ const plexMono = IBM_Plex_Mono({
   weight: ["400", "500", "600"],
 });
 
-const SITE_NAME = "Harbor Stack";
+const SITE_NAME = "Edge Stack";
 const DESCRIPTION =
-  "Play Harbor Stack — mobile-friendly Tetris by Strand & Stone with touch controls, levels, pause, and a live high-score leaderboard. No account required.";
+  "Edge Stack — 18+ late-night Tetris. Clear lines, don't bust, post your score. Touch + keyboard, mobile-ready, no account. By Strand & Stone.";
 
 export const metadata: Metadata = {
   metadataBase: getSiteUrl(),
   title: {
-    default: "Harbor Stack — Playable Tetris by Strand & Stone",
-    template: "%s · Harbor Stack",
+    default: "Edge Stack — 18+ Late-Night Tetris by Strand & Stone",
+    template: "%s · Edge Stack",
   },
   description: DESCRIPTION,
   applicationName: SITE_NAME,
   keywords: [
     "Tetris",
-    "Harbor Stack",
+    "Edge Stack",
     "Strand & Stone",
+    "18+",
     "browser game",
     "puzzle game",
-    "tetromino",
+    "gooner",
   ],
   authors: [{ name: "Strand & Stone" }],
   creator: "Strand & Stone",
@@ -46,12 +47,12 @@ export const metadata: Metadata = {
     locale: "en_US",
     url: "/",
     siteName: SITE_NAME,
-    title: "Harbor Stack — Playable Tetris by Strand & Stone",
+    title: "Edge Stack — 18+ Late-Night Tetris by Strand & Stone",
     description: DESCRIPTION,
   },
   twitter: {
     card: "summary_large_image",
-    title: "Harbor Stack — Playable Tetris by Strand & Stone",
+    title: "Edge Stack — 18+ Late-Night Tetris by Strand & Stone",
     description: DESCRIPTION,
   },
   robots: {
@@ -62,15 +63,16 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#1a8a7a",
+  themeColor: "#0a0608",
   width: "device-width",
   initialScale: 1,
   maximumScale: 5,
+  viewportFit: "cover",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="en" className={`${syne.variable} ${plexMono.variable}`}>
+    <html lang="en" className={`${teko.variable} ${plexMono.variable}`}>
       <body>
         <a className="skip-link" href="#main">
           Skip to game
