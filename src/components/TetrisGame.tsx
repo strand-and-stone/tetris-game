@@ -499,6 +499,17 @@ export default function TetrisGame() {
       <div className={styles.touch} aria-label="Touch controls">
         <button
           type="button"
+          className={`${styles.touchBtn} ${styles.touchWide}`}
+          aria-label="Rotate"
+          onPointerDown={(e) => {
+            e.preventDefault();
+            runAction("rotate");
+          }}
+        >
+          Rotate
+        </button>
+        <button
+          type="button"
           className={styles.touchBtn}
           aria-label="Move left"
           onPointerDown={(e) => {
@@ -510,17 +521,6 @@ export default function TetrisGame() {
           onPointerCancel={clearRepeat}
         >
           ←
-        </button>
-        <button
-          type="button"
-          className={styles.touchBtn}
-          aria-label="Rotate"
-          onPointerDown={(e) => {
-            e.preventDefault();
-            runAction("rotate");
-          }}
-        >
-          ↻
         </button>
         <button
           type="button"
@@ -552,21 +552,23 @@ export default function TetrisGame() {
         </button>
         <button
           type="button"
-          className={`${styles.touchBtn} ${styles.touchAccent}`}
+          className={`${styles.touchBtn} ${styles.touchWide} ${styles.touchAccent}`}
           aria-label="Hard drop"
           onPointerDown={(e) => {
             e.preventDefault();
             runAction("hard");
           }}
         >
-          Drop hard
+          Drop
         </button>
+      </div>
+
+      <div className={styles.touchMeta}>
         <button
           type="button"
-          className={styles.touchBtn}
+          className={styles.pauseLink}
           aria-label={state.status === "playing" ? "Pause" : "Play"}
-          onPointerDown={(e) => {
-            e.preventDefault();
+          onClick={() => {
             if (state.status === "playing" || state.status === "paused") {
               runAction("pause");
             } else {
@@ -574,11 +576,10 @@ export default function TetrisGame() {
             }
           }}
         >
-          {state.status === "playing" ? "Edge pause" : "Start"}
+          {state.status === "playing" ? "pause" : "play"}
         </button>
+        <span className={styles.swipeHint}>swipe well · tap rotate</span>
       </div>
-
-      <p className={styles.swipeHint}>Swipe the well · tap to twist · hold the bust</p>
 
       <aside className={styles.leaderboard} aria-labelledby="leaderboard-heading">
         <div className={styles.leaderHead}>
