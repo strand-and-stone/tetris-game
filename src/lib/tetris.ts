@@ -69,13 +69,13 @@ const PIECE_SHAPES: Record<PieceId, Matrix> = {
 };
 
 export const PIECE_COLORS: Record<Exclude<Cell, 0>, string> = {
-  1: "#3ecfc8",
-  2: "#e8b84a",
-  3: "#6b8cae",
-  4: "#5ecf8a",
-  5: "#d96b5c",
-  6: "#4a7fd4",
-  7: "#d4894a",
+  1: "#5ce1e6",
+  2: "#ffc857",
+  3: "#ff4d6d",
+  4: "#b8ff3c",
+  5: "#ff3b5c",
+  6: "#ff7a59",
+  7: "#ff9f68",
 };
 
 export const PIECE_NAMES: Record<PieceId, string> = {

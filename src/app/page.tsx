@@ -15,10 +15,10 @@ export default function HomePage() {
 
       <footer className={styles.footer}>
         <p>
-          Built by <span className={styles.mark}>Strand &amp; Stone</span>
+          18+ · Built by <span className={styles.mark}>Strand &amp; Stone</span>
         </p>
         <p className={styles.fine}>
-          Harbor Stack is an unofficial fan-made Tetris experience for the browser.
+          Edge Stack is an unofficial fan-made Tetris experience. Clear lines. Don&apos;t bust.
         </p>
       </footer>
     </div>

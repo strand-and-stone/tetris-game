@@ -1,13 +1,17 @@
 :root {
-  --ink: #0f1c24;
-  --stone: #4d5f6a;
-  --strand: #1a8a7a;
-  --copper: #c4783a;
-  --foam: #e8f0f2;
-  --mist: #b7c5ce;
-  --well: #102029;
+  --ink: #ffe6ef;
+  --stone: #c9a0ad;
+  --strand: #ff4d6d;
+  --copper: #b8ff3c;
+  --foam: #1a0c12;
+  --mist: #4a2433;
+  --well: #080406;
+  --slime: #b8ff3c;
+  --sweat: #ffc857;
+  --spit: #5ce1e6;
+  --flush: #ff3b5c;
   --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
-  color-scheme: light;
+  color-scheme: dark;
 }
 
 *,
@@ -27,7 +31,7 @@ body {
   overflow-x: hidden;
   font-family: var(--font-mono), ui-monospace, monospace;
   color: var(--ink);
-  background: #aebec8;
+  background: #0a0608;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
 }
@@ -48,8 +52,8 @@ img {
   z-index: 100;
   transform: translateY(-160%);
   padding: 0.55rem 0.85rem;
-  background: var(--ink);
-  color: var(--foam);
+  background: var(--strand);
+  color: #0a0608;
   font-family: var(--font-display);
   font-weight: 700;
   text-decoration: none;
@@ -58,12 +62,12 @@ img {
 
 .skip-link:focus {
   transform: translateY(0);
-  outline: 3px solid var(--copper);
+  outline: 3px solid var(--slime);
   outline-offset: 2px;
 }
 
 :focus-visible {
-  outline: 3px solid var(--copper);
+  outline: 3px solid var(--slime);
   outline-offset: 2px;
 }
 

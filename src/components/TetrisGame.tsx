@@ -342,19 +342,22 @@ export default function TetrisGame() {
   const nextShape = getShape(state.next);
   const overlay =
     state.status === "ready"
-      ? { title: "Stack the tide", hint: "Play instantly — no account" }
+      ? { title: "One more line", hint: "18+ · no account · just edge" }
       : state.status === "paused"
-        ? { title: "Paused", hint: "Resume when ready" }
+        ? { title: "Edging…", hint: "Breathe. Then go again." }
         : state.status === "over"
-          ? { title: "Game Over", hint: `${formatScore(state.score)} pts · L${state.level}` }
+          ? {
+              title: "You busted",
+              hint: `${formatScore(state.score)} pts · L${state.level} · sticky finish`,
+            }
           : null;
 
   return (
     <div className={styles.shell}>
       <header className={styles.hero}>
-        <p className={styles.brand}>Strand &amp; Stone</p>
-        <h1 className={styles.title}>Harbor Stack</h1>
-        <p className={styles.lede}>Clear lines. Climb levels. Claim the board.</p>
+        <p className={styles.brand}>Edge Stack</p>
+        <h1 className={styles.title}>Clear lines. Don&apos;t bust.</h1>
+        <p className={styles.lede}>Late-night Tetris for gooners who can hold it.</p>
       </header>
 
       <div className={styles.chrome}>
@@ -442,7 +445,7 @@ export default function TetrisGame() {
               {state.status === "over" && (
                 <form className={styles.scoreForm} onSubmit={submitScore}>
                   <label className={styles.scoreLabel} htmlFor="player-name">
-                    Initials for the harbor board
+                    Tag the goon board
                   </label>
                   <div className={styles.scoreRow}>
                     <input
@@ -452,7 +455,7 @@ export default function TetrisGame() {
                       autoComplete="off"
                       spellCheck={false}
                       maxLength={12}
-                      placeholder="AAA"
+                      placeholder="GOON"
                       value={playerName}
                       onChange={(e) => setPlayerName(e.target.value.slice(0, 12))}
                       disabled={submitState === "saving" || submitState === "saved"}
@@ -467,10 +470,10 @@ export default function TetrisGame() {
                       }
                     >
                       {submitState === "saved"
-                        ? "Saved"
+                        ? "Posted"
                         : submitState === "saving"
-                          ? "Saving…"
-                          : "Submit"}
+                          ? "Posting…"
+                          : "Post it"}
                     </button>
                   </div>
                   {submitError && <p className={styles.formError}>{submitError}</p>}
@@ -483,10 +486,10 @@ export default function TetrisGame() {
                 onClick={() => runAction(state.status === "paused" ? "pause" : "start")}
               >
                 {state.status === "paused"
-                  ? "Resume"
+                  ? "Keep going"
                   : state.status === "over"
-                    ? "Play again"
-                    : "Play"}
+                    ? "Edge again"
+                    : "Start edging"}
               </button>
             </div>
           )}
@@ -556,7 +559,7 @@ export default function TetrisGame() {
             runAction("hard");
           }}
         >
-          Drop
+          Drop hard
         </button>
         <button
           type="button"
@@ -571,16 +574,16 @@ export default function TetrisGame() {
             }
           }}
         >
-          {state.status === "playing" ? "Pause" : "Play"}
+          {state.status === "playing" ? "Edge pause" : "Start"}
         </button>
       </div>
 
-      <p className={styles.swipeHint}>Swipe the board · tap to rotate · buttons below</p>
+      <p className={styles.swipeHint}>Swipe the well · tap to twist · hold the bust</p>
 
       <aside className={styles.leaderboard} aria-labelledby="leaderboard-heading">
         <div className={styles.leaderHead}>
           <h2 id="leaderboard-heading" className={styles.leaderTitle}>
-            Harbor board
+            Goon board
           </h2>
           <button
             type="button"
@@ -591,12 +594,12 @@ export default function TetrisGame() {
             Refresh
           </button>
         </div>
-        {leaderboard.loading && <p className={styles.leaderMeta}>Loading scores…</p>}
+        {leaderboard.loading && <p className={styles.leaderMeta}>Loading streaks…</p>}
         {leaderboard.error && !leaderboard.loading && (
           <p className={styles.leaderMeta}>{leaderboard.error}</p>
         )}
         {!leaderboard.loading && !leaderboard.error && leaderboard.scores.length === 0 && (
-          <p className={styles.leaderMeta}>No scores yet — be the first stack.</p>
+          <p className={styles.leaderMeta}>Empty well — leave the first sticky score.</p>
         )}
         {leaderboard.scores.length > 0 && (
           <ol className={styles.leaderList}>
@@ -615,17 +618,17 @@ export default function TetrisGame() {
       </aside>
 
       <aside className={styles.help} aria-label="Keyboard controls">
-        <h2 className={styles.helpTitle}>Desktop</h2>
+        <h2 className={styles.helpTitle}>Desktop keys</h2>
         <ul className={styles.helpList}>
           <li>
             <kbd>←</kbd>
-            <kbd>→</kbd> move
+            <kbd>→</kbd> slide
           </li>
           <li>
-            <kbd>↑</kbd> rotate · <kbd>↓</kbd> soft drop
+            <kbd>↑</kbd> twist · <kbd>↓</kbd> ease it in
           </li>
           <li>
-            <kbd>Space</kbd> hard drop · <kbd>P</kbd> pause
+            <kbd>Space</kbd> dump · <kbd>P</kbd> edge pause
           </li>
         </ul>
       </aside>

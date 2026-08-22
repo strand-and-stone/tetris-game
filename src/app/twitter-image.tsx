@@ -1,6 +1,6 @@
 import { ImageResponse } from "next/og";
 
-export const alt = "Harbor Stack by Strand & Stone";
+export const alt = "Edge Stack by Strand & Stone — 18+ Tetris";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
@@ -15,19 +15,28 @@ export default function TwitterImage() {
           flexDirection: "column",
           justifyContent: "center",
           padding: "72px",
-          background: "#102029",
-          color: "#e8f0f2",
+          background: "#080406",
+          color: "#ffe6ef",
           fontFamily: "sans-serif",
         }}
       >
-        <div style={{ display: "flex", fontSize: 36, color: "#3ecfc8", fontWeight: 700 }}>
-          Strand & Stone
+        <div style={{ display: "flex", fontSize: 34, color: "#b8ff3c", fontWeight: 700 }}>
+          Strand & Stone · 18+
         </div>
-        <div style={{ display: "flex", fontSize: 84, fontWeight: 800, marginTop: 12 }}>
-          Harbor Stack
+        <div
+          style={{
+            display: "flex",
+            fontSize: 92,
+            fontWeight: 800,
+            marginTop: 10,
+            color: "#ff4d6d",
+            textTransform: "uppercase",
+          }}
+        >
+          Edge Stack
         </div>
-        <div style={{ display: "flex", fontSize: 30, marginTop: 18, color: "#b7c5ce" }}>
-          Play Tetris instantly — no account, keyboard + touch.
+        <div style={{ display: "flex", fontSize: 28, marginTop: 16, color: "#c9a0ad" }}>
+          {`One more line. Don't bust. No account.`}
         </div>
       </div>
     ),
