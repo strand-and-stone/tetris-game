@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useId, useRef, useState } from "react";
 import {
   COLS,
   PIECE_COLORS,
@@ -22,7 +22,33 @@ import {
   togglePause,
 } from "@/lib/tetris";
 import type { HighScore } from "@/lib/score-types";
+import {
+  type EggBurst,
+  type EggCue,
+  cueForBust,
+  cueForClear,
+  cueForLevel,
+  cueForLongLock,
+  cueForPanic,
+  cueForPiece,
+  cueForSubmit,
+  isNearTop,
+} from "@/lib/gooner-eggs";
 import styles from "./TetrisGame.module.css";
+
+type ToastItem = {
+  id: number;
+  text: string;
+  kind: EggCue["kind"];
+};
+
+type BurstItem = {
+  id: number;
+  kind: EggBurst;
+  x: number;
+  y: number;
+  delay: number;
+};
 
 type Action =
   | "left"
@@ -70,6 +96,10 @@ export default function TetrisGame() {
     "idle",
   );
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const [toasts, setToasts] = useState<ToastItem[]>([]);
+  const [bursts, setBursts] = useState<BurstItem[]>([]);
+  const [flash, setFlash] = useState<"pink" | "lime" | "hot" | null>(null);
+  const [pressedBtn, setPressedBtn] = useState<string | null>(null);
 
   const stateRef = useRef(state);
   const dropAcc = useRef(0);
@@ -77,10 +107,71 @@ export default function TetrisGame() {
   const repeatRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const swipeStart = useRef<{ x: number; y: number; t: number } | null>(null);
   const boardRef = useRef<HTMLElement | null>(null);
+  const prevMeta = useRef({
+    lines: state.lines,
+    level: state.level,
+    score: state.score,
+    status: state.status,
+    next: state.next,
+    activeId: state.active?.id ?? null,
+  });
+  const comboRef = useRef(0);
+  const panicArmed = useRef(true);
+  const pieceSpawnedAt = useRef(0);
+  const eggSeq = useRef(0);
+  const hardDropDepth = useRef(0);
+  const toastRegionId = useId();
+  const pressClearTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     stateRef.current = state;
   }, [state]);
+
+  const pushEgg = useCallback((cue: EggCue | null) => {
+    if (!cue) return;
+    eggSeq.current += 1;
+    const id = eggSeq.current;
+    setToasts((prev) => [...prev.slice(-2), { id, text: cue.text, kind: cue.kind }]);
+    window.setTimeout(() => {
+      setToasts((prev) => prev.filter((t) => t.id !== id));
+    }, cue.kind === "tetris" || cue.kind === "submit" ? 2200 : 1600);
+
+    if (cue.flash) {
+      setFlash(cue.flash);
+      window.setTimeout(() => setFlash(null), 280);
+    }
+
+    if (cue.bursts?.length) {
+      const spawned: BurstItem[] = [];
+      for (const kind of cue.bursts) {
+        if (kind === "flash") continue;
+        const count = kind === "squirt" ? 5 : kind === "hearts" ? 4 : 6;
+        for (let i = 0; i < count; i += 1) {
+          eggSeq.current += 1;
+          spawned.push({
+            id: eggSeq.current,
+            kind,
+            x: 12 + Math.random() * 76,
+            y: 18 + Math.random() * 55,
+            delay: Math.random() * 120,
+          });
+        }
+      }
+      if (spawned.length) {
+        setBursts((prev) => [...prev.slice(-18), ...spawned]);
+        window.setTimeout(() => {
+          const ids = new Set(spawned.map((b) => b.id));
+          setBursts((prev) => prev.filter((b) => !ids.has(b.id)));
+        }, 900);
+      }
+    }
+  }, []);
+
+  const bumpPress = useCallback((key: string) => {
+    setPressedBtn(key);
+    if (pressClearTimer.current) clearTimeout(pressClearTimer.current);
+    pressClearTimer.current = setTimeout(() => setPressedBtn(null), 120);
+  }, []);
 
   const refreshScores = useCallback(async () => {
     setLeaderboard((prev) => ({ ...prev, loading: true, error: null }));
@@ -127,6 +218,71 @@ export default function TetrisGame() {
     };
   }, []);
 
+  // Play-event Easter eggs (diff previous snapshot — no engine rewrite)
+  useEffect(() => {
+    const prev = prevMeta.current;
+    const linesDelta = state.lines - prev.lines;
+    const leveled = state.level > prev.level;
+
+    if (state.status === "playing" && prev.status !== "playing") {
+      comboRef.current = 0;
+      panicArmed.current = true;
+      pieceSpawnedAt.current = performance.now();
+    }
+
+    if (linesDelta > 0) {
+      comboRef.current += 1;
+      pushEgg(cueForClear(linesDelta, comboRef.current));
+      pieceSpawnedAt.current = performance.now();
+      hardDropDepth.current = 0;
+    } else if (
+      state.status === "playing" &&
+      state.active &&
+      state.active.id !== prev.activeId &&
+      prev.activeId !== null &&
+      state.next !== prev.next
+    ) {
+      comboRef.current = 0;
+      const heldMs = performance.now() - pieceSpawnedAt.current;
+      if (hardDropDepth.current >= 12 || heldMs >= 6500) {
+        pushEgg(cueForLongLock());
+      }
+      hardDropDepth.current = 0;
+      pieceSpawnedAt.current = performance.now();
+      pushEgg(cueForPiece(state.active.id));
+    } else if (prev.activeId === null && state.active?.id) {
+      pieceSpawnedAt.current = performance.now();
+    }
+
+    if (leveled) {
+      pushEgg(cueForLevel(state.level));
+    }
+
+    if (state.status === "playing" && state.active) {
+      const danger = isNearTop(state.board, 4);
+      if (danger && panicArmed.current) {
+        panicArmed.current = false;
+        pushEgg(cueForPanic());
+      } else if (!danger) {
+        panicArmed.current = true;
+      }
+    }
+
+    if (state.status === "over" && prev.status !== "over") {
+      pushEgg(cueForBust());
+      comboRef.current = 0;
+    }
+
+    prevMeta.current = {
+      lines: state.lines,
+      level: state.level,
+      score: state.score,
+      status: state.status,
+      next: state.next,
+      activeId: state.active?.id ?? null,
+    };
+  }, [state, pushEgg]);
+
   const apply = useCallback((fn: (s: GameState) => GameState) => {
     setState((prev) => {
       const next = fn(prev);
@@ -141,6 +297,9 @@ export default function TetrisGame() {
         case "start":
           setSubmitState("idle");
           setSubmitError(null);
+          comboRef.current = 0;
+          panicArmed.current = true;
+          hardDropDepth.current = 0;
           apply(startGame);
           break;
         case "pause":
@@ -155,9 +314,16 @@ export default function TetrisGame() {
         case "soft":
           apply(softDrop);
           break;
-        case "hard":
+        case "hard": {
+          const before = stateRef.current;
+          if (before.active) {
+            const gy = ghostY(before);
+            hardDropDepth.current =
+              gy === null ? 0 : Math.max(0, gy - before.active.y);
+          }
           apply(hardDrop);
           break;
+        }
         case "rotate":
           apply((s) => rotate(s, 1));
           break;
@@ -332,6 +498,7 @@ export default function TetrisGame() {
         error: null,
       });
       setSubmitState("saved");
+      pushEgg(cueForSubmit());
     } catch {
       setSubmitState("error");
       setSubmitError("Could not save score");
@@ -392,7 +559,15 @@ export default function TetrisGame() {
 
         <section
           ref={boardRef}
-          className={styles.boardWrap}
+          className={`${styles.boardWrap}${
+            flash === "pink"
+              ? ` ${styles.flashPink}`
+              : flash === "lime"
+                ? ` ${styles.flashLime}`
+                : flash === "hot"
+                  ? ` ${styles.flashHot}`
+                  : ""
+          }`}
           aria-label="Tetris playfield"
           onPointerDown={onSwipeStart}
           onPointerUp={onSwipeEnd}
@@ -435,6 +610,47 @@ export default function TetrisGame() {
                 );
               }),
             )}
+          </div>
+
+          <div className={styles.eggLayer} aria-live="polite" id={toastRegionId}>
+            {toasts.map((toast) => (
+              <p
+                key={toast.id}
+                className={`${styles.eggToast} ${
+                  toast.kind === "tetris"
+                    ? styles.eggTetris
+                    : toast.kind === "combo"
+                      ? styles.eggCombo
+                      : toast.kind === "panic"
+                        ? styles.eggPanic
+                        : toast.kind === "level"
+                          ? styles.eggLevel
+                          : toast.kind === "submit"
+                            ? styles.eggSubmit
+                            : styles.eggDefault
+                }`}
+              >
+                {toast.text}
+              </p>
+            ))}
+            {bursts.map((burst) => (
+              <span
+                key={burst.id}
+                className={`${styles.eggBurst} ${
+                  burst.kind === "hearts"
+                    ? styles.burstHearts
+                    : burst.kind === "squirt"
+                      ? styles.burstSquirt
+                      : styles.burstSlime
+                }`}
+                style={{
+                  left: `${burst.x}%`,
+                  top: `${burst.y}%`,
+                  animationDelay: `${burst.delay}ms`,
+                }}
+                aria-hidden={true}
+              />
+            ))}
           </div>
 
           {overlay && (
@@ -499,10 +715,13 @@ export default function TetrisGame() {
       <div className={styles.touch} aria-label="Touch controls">
         <button
           type="button"
-          className={`${styles.touchBtn} ${styles.touchWide}`}
+          className={`${styles.touchBtn} ${styles.touchWide} ${
+            pressedBtn === "rotate" ? styles.touchPressed : ""
+          }`}
           aria-label="Rotate"
           onPointerDown={(e) => {
             e.preventDefault();
+            bumpPress("rotate");
             runAction("rotate");
           }}
         >
@@ -510,10 +729,11 @@ export default function TetrisGame() {
         </button>
         <button
           type="button"
-          className={styles.touchBtn}
+          className={`${styles.touchBtn} ${pressedBtn === "left" ? styles.touchPressed : ""}`}
           aria-label="Move left"
           onPointerDown={(e) => {
             e.preventDefault();
+            bumpPress("left");
             holdAction("left");
           }}
           onPointerUp={clearRepeat}
@@ -524,10 +744,11 @@ export default function TetrisGame() {
         </button>
         <button
           type="button"
-          className={styles.touchBtn}
+          className={`${styles.touchBtn} ${pressedBtn === "soft" ? styles.touchPressed : ""}`}
           aria-label="Soft drop"
           onPointerDown={(e) => {
             e.preventDefault();
+            bumpPress("soft");
             holdAction("soft");
           }}
           onPointerUp={clearRepeat}
@@ -538,10 +759,11 @@ export default function TetrisGame() {
         </button>
         <button
           type="button"
-          className={styles.touchBtn}
+          className={`${styles.touchBtn} ${pressedBtn === "right" ? styles.touchPressed : ""}`}
           aria-label="Move right"
           onPointerDown={(e) => {
             e.preventDefault();
+            bumpPress("right");
             holdAction("right");
           }}
           onPointerUp={clearRepeat}
@@ -552,10 +774,13 @@ export default function TetrisGame() {
         </button>
         <button
           type="button"
-          className={`${styles.touchBtn} ${styles.touchWide} ${styles.touchAccent}`}
+          className={`${styles.touchBtn} ${styles.touchWide} ${styles.touchAccent} ${
+            pressedBtn === "hard" ? styles.touchPressed : ""
+          }`}
           aria-label="Hard drop"
           onPointerDown={(e) => {
             e.preventDefault();
+            bumpPress("hard");
             runAction("hard");
           }}
         >
