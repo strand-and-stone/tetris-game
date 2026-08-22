@@ -233,7 +233,8 @@
 
 .primaryBtn,
 .touchBtn,
-.refreshBtn {
+.refreshBtn,
+.pauseLink {
   font: inherit;
   cursor: pointer;
   border: 1px solid transparent;
@@ -270,6 +271,7 @@
 .primaryBtn:focus-visible,
 .touchBtn:focus-visible,
 .refreshBtn:focus-visible,
+.pauseLink:focus-visible,
 .scoreInput:focus-visible {
   outline: 3px solid var(--slime);
   outline-offset: 2px;
@@ -277,8 +279,8 @@
 
 .touch {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 0.55rem;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.5rem;
   width: min(100%, 22rem);
   margin: 0 auto;
   touch-action: manipulation;
@@ -293,15 +295,14 @@
   font-family: var(--font-display);
   font-size: 1.35rem;
   font-weight: 700;
-  letter-spacing: 0.03em;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
 }
 
-.touchBtn:nth-child(5),
-.touchBtn:nth-child(6) {
-  grid-column: span 2;
-  font-size: 1.05rem;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
+.touchWide {
+  grid-column: 1 / -1;
+  font-size: 1.15rem;
+  letter-spacing: 0.1em;
 }
 
 .touchAccent {
@@ -315,11 +316,38 @@
   background: color-mix(in srgb, var(--strand) 28%, var(--foam));
 }
 
+.touchMeta {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.85rem;
+  width: min(100%, 22rem);
+  margin: 0 auto;
+}
+
+.pauseLink {
+  background: transparent;
+  border: none;
+  color: var(--stone);
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+  padding: 0.2rem 0.35rem;
+  min-height: auto;
+}
+
+.pauseLink:hover {
+  color: var(--strand);
+}
+
 .swipeHint {
   margin: 0;
   text-align: center;
   color: var(--stone);
-  font-size: 0.72rem;
+  font-size: 0.68rem;
 }
 
 .leaderboard {
@@ -494,20 +522,19 @@
   }
 }
 
-/* Mobile: fat-finger buttons + full 10×20 well still visible */
+/* Mobile: big board first, then fat 3-row controls */
 @media (max-width: 859px) {
   .shell {
     --safe-top: env(safe-area-inset-top, 0px);
     --safe-bottom: env(safe-area-inset-bottom, 0px);
-    /* Reserved vertical space outside the board — room for ~64px buttons */
-    --chrome-budget: 5.2rem;
-    --touch-budget: 9.25rem;
-    --leader-budget: 5.5rem;
-    --footer-budget: 2.1rem;
-    --gap-budget: 1.8rem;
+    --chrome-budget: 4.4rem;
+    --touch-budget: 13.25rem;
+    --leader-budget: 4.2rem;
+    --footer-budget: 1.7rem;
+    --gap-budget: 1.35rem;
     --board-h: min(
-      42dvh,
-      18rem,
+      56dvh,
+      24rem,
       calc(
         100dvh - var(--safe-top) - var(--safe-bottom) - var(--chrome-budget) - var(--touch-budget) -
           var(--leader-budget) - var(--footer-budget) - var(--gap-budget)
@@ -515,63 +542,61 @@
     );
     width: 100%;
     min-height: auto;
-    gap: 0.3rem;
-    padding-top: max(0.3rem, var(--safe-top));
-    padding-bottom: max(0.35rem, var(--safe-bottom));
-    padding-left: max(0.5rem, env(safe-area-inset-left));
-    padding-right: max(0.5rem, env(safe-area-inset-right));
+    gap: 0.28rem;
+    padding-top: max(0.25rem, var(--safe-top));
+    padding-bottom: max(0.3rem, var(--safe-bottom));
+    padding-left: max(0.45rem, env(safe-area-inset-left));
+    padding-right: max(0.45rem, env(safe-area-inset-right));
   }
 
   .hero {
-    gap: 0.05rem;
+    gap: 0;
   }
 
   .brand {
-    font-size: clamp(1.35rem, 6vw, 1.75rem);
+    font-size: clamp(1.2rem, 5.5vw, 1.55rem);
   }
 
   .title {
-    font-size: clamp(0.95rem, 3.8vw, 1.15rem);
+    font-size: clamp(0.82rem, 3.3vw, 0.98rem);
     letter-spacing: 0.01em;
-    max-width: 22rem;
+    max-width: 20rem;
     margin-left: auto;
     margin-right: auto;
   }
 
   .lede {
-    font-size: 0.68rem;
-    margin-top: 0.05rem;
+    display: none;
   }
 
   .chrome {
-    gap: 0.3rem;
+    gap: 0.25rem;
   }
 
   .statRow {
     width: min(100%, calc(var(--board-h) * 0.5));
-    gap: 0.22rem;
+    gap: 0.18rem;
   }
 
   .stat,
   .next {
-    padding: 0.18rem 0.28rem;
+    padding: 0.14rem 0.24rem;
   }
 
   .statLabel,
   .leaderTitle {
-    font-size: 0.52rem;
+    font-size: 0.5rem;
   }
 
   .statValue {
-    font-size: 0.85rem;
+    font-size: 0.8rem;
   }
 
   .next {
-    width: 3.1rem;
+    width: 2.85rem;
   }
 
   .boardWrap {
-    /* Size from available height so bottom rows never clip */
     width: calc(var(--board-h) * 0.5);
     height: var(--board-h);
     max-height: none;
@@ -579,41 +604,49 @@
   }
 
   .touch {
-    width: min(100%, 22rem);
-    gap: 0.45rem;
+    width: min(100%, calc(var(--board-h) * 0.5 + 2.5rem), 22rem);
+    gap: 0.42rem;
   }
 
   .touchBtn {
     min-height: 3.75rem;
     min-width: 0;
-    font-size: 1.3rem;
-    padding: 0.35rem 0.25rem;
+    font-size: 1.35rem;
+    padding: 0.3rem 0.2rem;
   }
 
-  .touchBtn:nth-child(5),
-  .touchBtn:nth-child(6) {
+  .touchWide {
     min-height: 3.5rem;
-    font-size: 0.95rem;
+    font-size: 1.05rem;
+  }
+
+  .touchMeta {
+    width: min(100%, calc(var(--board-h) * 0.5 + 2.5rem), 22rem);
+    gap: 0.65rem;
+  }
+
+  .pauseLink {
+    font-size: 0.66rem;
   }
 
   .swipeHint {
-    font-size: 0.6rem;
+    font-size: 0.58rem;
   }
 
   .leaderboard {
-    width: min(100%, 22rem);
-    padding: 0.35rem 0.45rem;
+    width: min(100%, calc(var(--board-h) * 0.5 + 2.5rem), 22rem);
+    padding: 0.28rem 0.4rem;
     max-height: var(--leader-budget);
     overflow-y: auto;
     overscroll-behavior: contain;
   }
 
   .leaderName {
-    font-size: 0.88rem;
+    font-size: 0.82rem;
   }
 
   .leaderItem {
-    padding: 0.15rem 0;
+    padding: 0.12rem 0;
   }
 }
 
@@ -640,7 +673,7 @@
   }
 
   .touch,
-  .swipeHint {
+  .touchMeta {
     display: none;
   }
 
@@ -681,7 +714,8 @@
 
   .primaryBtn,
   .touchBtn,
-  .refreshBtn {
+  .refreshBtn,
+  .pauseLink {
     transition: none;
   }
 }
