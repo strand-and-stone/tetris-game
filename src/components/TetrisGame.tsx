@@ -356,8 +356,8 @@ export default function TetrisGame() {
     <div className={styles.shell}>
       <header className={styles.hero}>
         <p className={styles.brand}>Edge Stack</p>
-        <h1 className={styles.title}>Clear lines. Don&apos;t bust.</h1>
-        <p className={styles.lede}>Late-night Tetris for gooners who can hold it.</p>
+        <h1 className={styles.title}>late night Tetris for gooners who can&apos;t hold it</h1>
+        <p className={styles.lede}>Clear lines. Don&apos;t bust. 18+. No account.</p>
       </header>
 
       <div className={styles.chrome}>

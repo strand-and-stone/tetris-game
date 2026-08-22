@@ -33,15 +33,16 @@
   margin: 0;
   font-family: var(--font-display);
   font-weight: 600;
-  font-size: clamp(1.05rem, 3.4vw, 1.35rem);
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
+  font-size: clamp(1.15rem, 4.2vw, 1.55rem);
+  letter-spacing: 0.02em;
+  line-height: 1.15;
+  text-transform: none;
   color: var(--slime);
 }
 
 .lede {
   margin: 0.15rem auto 0;
-  max-width: 24rem;
+  max-width: 26rem;
   color: var(--stone);
   font-size: 0.86rem;
   line-height: 1.35;
@@ -277,7 +278,7 @@
 .touch {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 0.4rem;
+  gap: 0.55rem;
   width: min(100%, 22rem);
   margin: 0 auto;
   touch-action: manipulation;
@@ -285,12 +286,12 @@
 }
 
 .touchBtn {
-  min-height: 3.1rem;
+  min-height: 3.75rem;
   background: color-mix(in srgb, var(--foam) 92%, #ff4d6d);
   border-color: color-mix(in srgb, var(--strand) 40%, transparent);
   color: var(--ink);
   font-family: var(--font-display);
-  font-size: 1.25rem;
+  font-size: 1.35rem;
   font-weight: 700;
   letter-spacing: 0.03em;
 }
@@ -298,7 +299,7 @@
 .touchBtn:nth-child(5),
 .touchBtn:nth-child(6) {
   grid-column: span 2;
-  font-size: 0.95rem;
+  font-size: 1.05rem;
   letter-spacing: 0.08em;
   text-transform: uppercase;
 }
@@ -493,20 +494,20 @@
   }
 }
 
-/* Mobile: zoom out so the FULL 10×20 well stays in view with chrome + touch + board */
+/* Mobile: fat-finger buttons + full 10×20 well still visible */
 @media (max-width: 859px) {
   .shell {
     --safe-top: env(safe-area-inset-top, 0px);
     --safe-bottom: env(safe-area-inset-bottom, 0px);
-    /* Reserved vertical space outside the board */
-    --chrome-budget: 5.6rem;
-    --touch-budget: 6.4rem;
-    --leader-budget: 6.8rem;
-    --footer-budget: 2.4rem;
-    --gap-budget: 2.2rem;
+    /* Reserved vertical space outside the board — room for ~64px buttons */
+    --chrome-budget: 5.2rem;
+    --touch-budget: 9.25rem;
+    --leader-budget: 5.5rem;
+    --footer-budget: 2.1rem;
+    --gap-budget: 1.8rem;
     --board-h: min(
-      48dvh,
-      20.5rem,
+      42dvh,
+      18rem,
       calc(
         100dvh - var(--safe-top) - var(--safe-bottom) - var(--chrome-budget) - var(--touch-budget) -
           var(--leader-budget) - var(--footer-budget) - var(--gap-budget)
@@ -514,56 +515,59 @@
     );
     width: 100%;
     min-height: auto;
-    gap: 0.35rem;
-    padding-top: max(0.35rem, var(--safe-top));
-    padding-bottom: max(0.4rem, var(--safe-bottom));
-    padding-left: max(0.55rem, env(safe-area-inset-left));
-    padding-right: max(0.55rem, env(safe-area-inset-right));
+    gap: 0.3rem;
+    padding-top: max(0.3rem, var(--safe-top));
+    padding-bottom: max(0.35rem, var(--safe-bottom));
+    padding-left: max(0.5rem, env(safe-area-inset-left));
+    padding-right: max(0.5rem, env(safe-area-inset-right));
   }
 
   .hero {
-    gap: 0;
+    gap: 0.05rem;
   }
 
   .brand {
-    font-size: clamp(1.55rem, 7vw, 2rem);
+    font-size: clamp(1.35rem, 6vw, 1.75rem);
   }
 
   .title {
-    font-size: 0.78rem;
-    letter-spacing: 0.1em;
+    font-size: clamp(0.95rem, 3.8vw, 1.15rem);
+    letter-spacing: 0.01em;
+    max-width: 22rem;
+    margin-left: auto;
+    margin-right: auto;
   }
 
   .lede {
-    font-size: 0.72rem;
+    font-size: 0.68rem;
     margin-top: 0.05rem;
   }
 
   .chrome {
-    gap: 0.35rem;
+    gap: 0.3rem;
   }
 
   .statRow {
     width: min(100%, calc(var(--board-h) * 0.5));
-    gap: 0.25rem;
+    gap: 0.22rem;
   }
 
   .stat,
   .next {
-    padding: 0.22rem 0.3rem;
+    padding: 0.18rem 0.28rem;
   }
 
   .statLabel,
   .leaderTitle {
-    font-size: 0.55rem;
+    font-size: 0.52rem;
   }
 
   .statValue {
-    font-size: 0.9rem;
+    font-size: 0.85rem;
   }
 
   .next {
-    width: 3.4rem;
+    width: 3.1rem;
   }
 
   .boardWrap {
@@ -575,38 +579,41 @@
   }
 
   .touch {
-    width: min(100%, calc(var(--board-h) * 0.5 + 1rem), 20rem);
-    gap: 0.28rem;
+    width: min(100%, 22rem);
+    gap: 0.45rem;
   }
 
   .touchBtn {
-    min-height: 2.55rem;
-    font-size: 1.05rem;
+    min-height: 3.75rem;
+    min-width: 0;
+    font-size: 1.3rem;
+    padding: 0.35rem 0.25rem;
   }
 
   .touchBtn:nth-child(5),
   .touchBtn:nth-child(6) {
-    font-size: 0.78rem;
+    min-height: 3.5rem;
+    font-size: 0.95rem;
   }
 
   .swipeHint {
-    font-size: 0.62rem;
+    font-size: 0.6rem;
   }
 
   .leaderboard {
-    width: min(100%, calc(var(--board-h) * 0.5 + 1rem), 20rem);
-    padding: 0.4rem 0.5rem;
+    width: min(100%, 22rem);
+    padding: 0.35rem 0.45rem;
     max-height: var(--leader-budget);
     overflow-y: auto;
     overscroll-behavior: contain;
   }
 
   .leaderName {
-    font-size: 0.92rem;
+    font-size: 0.88rem;
   }
 
   .leaderItem {
-    padding: 0.18rem 0;
+    padding: 0.15rem 0;
   }
 }
 
