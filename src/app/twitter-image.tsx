@@ -1,6 +1,6 @@
 import { ImageResponse } from "next/og";
 
-export const alt = "Edge Stack by Strand & Stone — 18+ Tetris";
+export const alt = "Edge Stack — late night Tetris for gooners who can't hold it";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
@@ -36,7 +36,7 @@ export default function TwitterImage() {
           Edge Stack
         </div>
         <div style={{ display: "flex", fontSize: 28, marginTop: 16, color: "#c9a0ad" }}>
-          {`One more line. Don't bust. No account.`}
+          {`late night Tetris for gooners who can't hold it`}
         </div>
       </div>
     ),

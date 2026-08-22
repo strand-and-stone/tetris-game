@@ -17,12 +17,12 @@ const plexMono = IBM_Plex_Mono({
 
 const SITE_NAME = "Edge Stack";
 const DESCRIPTION =
-  "Edge Stack — 18+ late-night Tetris. Clear lines, don't bust, post your score. Touch + keyboard, mobile-ready, no account. By Strand & Stone.";
+  "late night Tetris for gooners who can't hold it — Edge Stack, 18+ browser Tetris by Strand & Stone. Touch + keyboard, mobile-ready, live high scores. No account.";
 
 export const metadata: Metadata = {
   metadataBase: getSiteUrl(),
   title: {
-    default: "Edge Stack — 18+ Late-Night Tetris by Strand & Stone",
+    default: "Edge Stack — late night Tetris for gooners who can't hold it",
     template: "%s · Edge Stack",
   },
   description: DESCRIPTION,
@@ -47,12 +47,12 @@ export const metadata: Metadata = {
     locale: "en_US",
     url: "/",
     siteName: SITE_NAME,
-    title: "Edge Stack — 18+ Late-Night Tetris by Strand & Stone",
+    title: "Edge Stack — late night Tetris for gooners who can't hold it",
     description: DESCRIPTION,
   },
   twitter: {
     card: "summary_large_image",
-    title: "Edge Stack — 18+ Late-Night Tetris by Strand & Stone",
+    title: "Edge Stack — late night Tetris for gooners who can't hold it",
     description: DESCRIPTION,
   },
   robots: {
