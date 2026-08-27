@@ -75,7 +75,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     <html lang="en" className={`${teko.variable} ${plexMono.variable}`}>
       <body>
         <a className="skip-link" href="#main">
-          Skip to game
+          Skip to the well
         </a>
         {children}
       </body>

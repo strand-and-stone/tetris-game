@@ -34,6 +34,68 @@
   opacity: 0.95;
 }
 
+.graffiti {
+  position: absolute;
+  inset: 0;
+  font-family: var(--font-display), sans-serif;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--strand);
+  pointer-events: none;
+}
+
+.graffiti span {
+  position: absolute;
+  opacity: 0.08;
+  white-space: nowrap;
+}
+
+.g1 {
+  top: 12%;
+  left: 4%;
+  font-size: clamp(1.4rem, 5vw, 2.4rem);
+  transform: rotate(-18deg);
+}
+
+.g2 {
+  top: 38%;
+  right: 3%;
+  font-size: clamp(1.2rem, 4vw, 2rem);
+  transform: rotate(12deg);
+  color: var(--slime);
+}
+
+.g3 {
+  bottom: 22%;
+  left: 8%;
+  font-size: clamp(1.1rem, 3.5vw, 1.7rem);
+  transform: rotate(-8deg);
+  color: var(--sweat);
+}
+
+.g4 {
+  top: 62%;
+  left: 2%;
+  font-size: clamp(1rem, 3.2vw, 1.5rem);
+  transform: rotate(21deg);
+}
+
+.g5 {
+  top: 18%;
+  right: 8%;
+  font-size: clamp(1rem, 3vw, 1.45rem);
+  transform: rotate(16deg);
+}
+
+.g6 {
+  bottom: 10%;
+  right: 6%;
+  font-size: clamp(1.3rem, 4.2vw, 2.1rem);
+  transform: rotate(-14deg);
+  color: var(--flush);
+}
+
 .grain {
   position: absolute;
   inset: 0;
@@ -89,6 +151,10 @@
     padding-top: 0.35rem;
     padding-bottom: calc(0.45rem + env(safe-area-inset-bottom));
     font-size: 0.68rem;
+  }
+
+  .fine {
+    display: none;
   }
 }
 

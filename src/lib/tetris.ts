@@ -28,6 +28,8 @@ export type GameState = {
   level: number;
   status: GameStatus;
   dropMs: number;
+  spawnOverride: PieceId | null;
+  monoSquares: boolean;
 };
 
 const PIECE_SHAPES: Record<PieceId, Matrix> = {
@@ -107,10 +109,14 @@ function shuffle<T>(items: T[]): T[] {
 
 function refillBag(bag: PieceId[]): PieceId[] {
   if (bag.length > 0) return bag;
-  return shuffle(ALL_PIECES);
+  return shuffle([...ALL_PIECES, "I"]);
 }
 
-function takeNext(bag: PieceId[]): { id: PieceId; bag: PieceId[] } {
+function takeNext(
+  bag: PieceId[],
+  override: PieceId | null = null,
+): { id: PieceId; bag: PieceId[] } {
+  if (override) return { id: override, bag };
   const filled = refillBag(bag);
   const [id, ...rest] = filled;
   return { id, bag: rest };
@@ -135,23 +141,31 @@ function spawnPiece(id: PieceId): ActivePiece {
   };
 }
 
+function spawnMono(): ActivePiece {
+  return { id: "O", matrix: [[2]], x: Math.floor(COLS / 2), y: 0 };
+}
+
+function spawnActive(state: GameState, id: PieceId): ActivePiece {
+  return state.monoSquares ? spawnMono() : spawnPiece(id);
+}
+
 function dropInterval(level: number): number {
   return Math.max(100, 800 - (level - 1) * 70);
 }
 
 export function createGame(): GameState {
-  const first = takeNext([]);
-  const second = takeNext(first.bag);
   return {
     board: emptyBoard(),
     active: null,
-    next: second.id,
-    bag: second.bag,
+    next: "T",
+    bag: [],
     score: 0,
     lines: 0,
     level: 1,
     status: "ready",
     dropMs: dropInterval(1),
+    spawnOverride: null,
+    monoSquares: false,
   };
 }
 
@@ -227,8 +241,8 @@ function lockPiece(state: GameState): GameState {
   const level = Math.floor(lines / 10) + 1;
   const score = state.score + LINE_SCORES[cleared] * Math.max(1, level);
 
-  const drawn = takeNext([...state.bag]);
-  const active = spawnPiece(state.next);
+  const drawn = takeNext(state.bag, state.spawnOverride);
+  const active = spawnActive(state, state.next);
   if (collides(board, active)) {
     return {
       ...state,
@@ -275,6 +289,8 @@ export function startGame(state: GameState): GameState {
     level: 1,
     status: "playing",
     dropMs: dropInterval(1),
+    spawnOverride: null,
+    monoSquares: false,
   };
 }
 
@@ -282,6 +298,71 @@ export function togglePause(state: GameState): GameState {
   if (state.status === "playing") return { ...state, status: "paused" };
   if (state.status === "paused") return { ...state, status: "playing" };
   return state;
+}
+
+function placeOverride(state: GameState, id: PieceId): ActivePiece | null {
+  const piece = state.monoSquares || id === "O" ? spawnMono() : spawnPiece(id);
+  const width = piece.matrix[0].length;
+  const x = Math.max(0, Math.min(state.active?.x ?? piece.x, COLS - width));
+  const y = state.active?.y ?? 0;
+  const placed: ActivePiece = { ...piece, x, y };
+  if (!collides(state.board, placed)) return placed;
+  const fresh = state.monoSquares || id === "O" ? spawnMono() : spawnPiece(id);
+  if (!collides(state.board, fresh)) return fresh;
+  return state.active;
+}
+
+/** Force upcoming pieces to `id`. O becomes single 1×1 squares. */
+export function setSpawnOverride(state: GameState, id: PieceId | null): GameState {
+  if (id) {
+    const next = { ...state, spawnOverride: id, monoSquares: true, next: id };
+    return { ...next, active: placeOverride(next, id) };
+  }
+  const drawn = takeNext(state.bag);
+  return {
+    ...state,
+    spawnOverride: null,
+    monoSquares: false,
+    next: drawn.id,
+    bag: drawn.bag,
+  };
+}
+
+/** Lowest empty cell, then leftmost. Null if the well is full. */
+export function nextSquareCell(board: Matrix): Point | null {
+  for (let y = board.length - 1; y >= 0; y -= 1) {
+    const row = board[y];
+    if (!row) continue;
+    for (let x = 0; x < row.length; x += 1) {
+      if (!row[x]) return { x, y };
+    }
+  }
+  return null;
+}
+
+/** Stamp a 1×1 into the next best square and aim the live piece at the one after. */
+export function placeNextSquare(state: GameState): GameState {
+  if (state.status !== "playing") return state;
+  const slot = nextSquareCell(state.board);
+  if (!slot) return state;
+  const board = cloneMatrix(state.board);
+  board[slot.y][slot.x] = 2;
+  const { board: cleared, cleared: n } = clearLines(board);
+  const lines = state.lines + n;
+  const level = Math.floor(lines / 10) + 1;
+  const aim = nextSquareCell(cleared);
+  const active = state.monoSquares
+    ? { id: "O" as const, matrix: [[2]] as Matrix, x: aim?.x ?? Math.floor(COLS / 2), y: 0 }
+    : state.active;
+  return {
+    ...state,
+    board: cleared,
+    active,
+    score: state.score + 2 + LINE_SCORES[n] * Math.max(1, level),
+    lines,
+    level,
+    dropMs: dropInterval(level),
+  };
 }
 
 export function move(state: GameState, dx: number, dy: number): GameState {
@@ -356,6 +437,14 @@ export function ghostY(state: GameState): number | null {
 export function renderCells(state: GameState): Matrix {
   if (!state.active) return cloneMatrix(state.board);
   return merge(state.board, state.active);
+}
+
+/** Highest locked row with a filled cell. Empty board returns `ROWS` (the floor). */
+export function stackPeakRow(board: Matrix): number {
+  for (let y = 0; y < board.length; y += 1) {
+    if (board[y]?.some((cell) => cell !== 0)) return y;
+  }
+  return board.length;
 }
 
 /** Cells for ghost overlay (true = ghost only, not solid). */
